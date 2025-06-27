@@ -1,18 +1,18 @@
-import base64
+# ===================================== ENFORCE CACHE DIRECTORY ======================================
 import os
-import warnings
+os.environ["TORCH_HOME"] = "./model_weights/torch"
+os.environ["HF_HOME"] = "./model_weights/huggingface"
+os.environ["PYANNOTE_CACHE"] = "./model_weights/torch/pyannote"
+# ====================================================================================================
 
+import base64
+import warnings
 import gradio as gr
 import pandas as pd
 
 from src.video_processing import process_all_videos_from_path, process_video
 
 warnings.filterwarnings("ignore")
-
-os.environ["TORCH_HOME"] = "./model_weights/torch"
-os.environ["HF_HOME"] = "./model_weights/huggingface"
-os.environ["PYANNOTE_CACHE"] = "./model_weights/torch/pyannote"
-
 
 def process_multiple_videos(
     folder_path=None,

@@ -1,12 +1,11 @@
+# ===================================== ENFORCE CACHE DIRECTORY======================================
 import os
-import warnings
-
 os.environ["TORCH_HOME"] = "./model_weights/torch"
 os.environ["HF_HOME"] = "./model_weights/huggingface"
 os.environ["PYANNOTE_CACHE"] = "./model_weights/torch/pyannote"
-
+# ====================================================================================================
 from transformers import pipeline
-
+import warnings
 warnings.filterwarnings("ignore")
 
 

@@ -1,10 +1,9 @@
+# ===================================== ENFORCE CACHE DIRECTORY======================================
 import os
-
-# Enforce .cache directory for PyTorch inside the project directory
 os.environ["TORCH_HOME"] = "./model_weights/torch"
 os.environ["HF_HOME"] = "./model_weights/huggingface"
 os.environ["PYANNOTE_CACHE"] = "./model_weights/torch/pyannote"
-
+# ====================================================================================================
 import warnings
 
 import pandas as pd
@@ -13,6 +12,7 @@ import torch
 from pyannote.audio import Pipeline
 
 from src.audio_processing import analyze_tone_intensity, extract_audio
+from src.ner import extract_named_entities
 from src.sentiment_analysis import analyze_sentiment
 from src.transcription import transcribe_audio
 
@@ -65,14 +65,16 @@ def process_video(
             if perform_tone
             else "N/A"
         )
+        named_entities = extract_named_entities(transcription)
         table_data.append(
             {
                 "speaker_id": speaker,
                 "start_time": f"{turn.start:.1f}s",
                 "end_time": f"{turn.end:.1f}s",
                 "transcribed_content": transcription,
+                "named_entities": named_entities,
                 "sentiment_score": sentiment_score,
-                "tone_intensity": tone_intensity,
+                "tone_intensity": tone_intensity,   
             }
         )
         print(

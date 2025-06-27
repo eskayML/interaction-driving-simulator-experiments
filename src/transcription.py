@@ -1,11 +1,11 @@
+# ===================================== ENFORCE CACHE DIRECTORY======================================
 import os
-
 os.environ["TORCH_HOME"] = "./model_weights/torch"
 os.environ["HF_HOME"] = "./model_weights/huggingface"
 os.environ["PYANNOTE_CACHE"] = "./model_weights/torch/pyannote"
+# ====================================================================================================
 
 import warnings
-
 import whisper
 
 
