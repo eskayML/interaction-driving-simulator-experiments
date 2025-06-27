@@ -1,5 +1,6 @@
 # ===================================== ENFORCE CACHE DIRECTORY======================================
 import os
+
 os.environ["TORCH_HOME"] = "./model_weights/torch"
 os.environ["HF_HOME"] = "./model_weights/huggingface"
 os.environ["PYANNOTE_CACHE"] = "./model_weights/torch/pyannote"
@@ -9,6 +10,7 @@ import warnings
 import pandas as pd
 import soundfile as sf
 import torch
+from loguru import logger
 from pyannote.audio import Pipeline
 
 from src.audio_processing import analyze_tone_intensity, extract_audio
@@ -32,15 +34,16 @@ pipeline.to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 def process_video(
     video_path,
     output_csv_path,
-    perform_diarization=True,
+    perform_ner=True,
     perform_sentiment=True,
     perform_tone=True,
 ):
-    """Process a single video: extract audio, diarize, transcribe, analyze sentiment and tone, save to CSV."""
+    """Process a single video: extract audio, perform speaker identification and diarization, run NER, transcribe, analyze sentiment and tone, save to CSV."""
     audio_path = "temp_audio.wav"
+    logger.info(f"Extracting audio from {video_path} to {audio_path}")
     extract_audio(video_path, audio_path)
 
-    diarization = pipeline(audio_path, num_speakers=6) if perform_diarization else None
+    diarization = pipeline(audio_path, num_speakers=6)
     audio, sr = sf.read(audio_path)
     output_dir = "speaker_segments"
     os.makedirs(output_dir, exist_ok=True)
@@ -57,44 +60,55 @@ def process_video(
         )
         sf.write(output_file, segment, sr)
         transcription = transcribe_audio(output_file)["text"]
+        # Only compute if enabled
         sentiment_score = (
-            analyze_sentiment(transcription) if perform_sentiment else "N/A"
+            analyze_sentiment(transcription) if perform_sentiment else None
         )
         tone_intensity = (
             analyze_tone_intensity(output_file, 0, len(segment) / sr)
             if perform_tone
-            else "N/A"
+            else None
         )
-        named_entities = extract_named_entities(transcription)
-        table_data.append(
-            {
-                "speaker_id": speaker,
-                "start_time": f"{turn.start:.1f}s",
-                "end_time": f"{turn.end:.1f}s",
-                "transcribed_content": transcription,
-                "named_entities": named_entities,
-                "sentiment_score": sentiment_score,
-                "tone_intensity": tone_intensity,   
-            }
-        )
-        print(
+        named_entities = extract_named_entities(transcription) if perform_ner else None
+
+        if (turn.end - turn.start) < 0.5:
+            continue
+
+        row = {
+            "speaker_id": speaker,
+            "start_time": f"{turn.start:.1f}s",
+            "end_time": f"{turn.end:.1f}s",
+            "transcribed_content": transcription,
+        }
+        if perform_ner:
+            row["named_entities"] = named_entities
+        if perform_sentiment:
+            row["sentiment_score"] = sentiment_score
+        if perform_tone:
+            row["tone_intensity"] = tone_intensity
+        table_data.append(row)
+        logger.success(
             f"Saved and transcribed: {output_file} (start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker})"
         )
 
     df = pd.DataFrame(table_data)
+
     df.to_csv(output_csv_path, index=False)
+    logger.info(f"Saved DataFrame to CSV: {output_csv_path}")
     os.remove(audio_path)
+    logger.info(f"Removed temporary audio file: {audio_path}")
     return df
 
 
 def process_all_videos_from_path(
     input_dir,
     output_dir,
-    perform_diarization=True,
+    perform_ner=True,
     perform_sentiment=True,
     perform_tone=True,
 ):
     """Process all video files in the input directory, saving results to output directory."""
+    logger.info(f"Processing all videos in directory: {input_dir}")
     os.makedirs(output_dir, exist_ok=True)
     for video_file in os.listdir(input_dir):
         if video_file.lower().endswith(".mp4"):
@@ -106,14 +120,10 @@ def process_all_videos_from_path(
                 process_video(
                     video_path,
                     output_csv_path,
-                    perform_diarization,
+                    perform_ner,
                     perform_sentiment,
                     perform_tone,
                 )
-                print(f"Processed: {video_file}")
+                logger.success(f"Processed: {video_file}")
             except Exception as e:
-                print(f"Error processing {video_file}: {str(e)}")
-
-                print(f"Processed: {video_file}")
-            except Exception as e:
-                print(f"Error processing {video_file}: {str(e)}")
+                logger.error(f"Error processing {video_file}: {str(e)}")

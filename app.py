@@ -1,5 +1,6 @@
 # ===================================== ENFORCE CACHE DIRECTORY ======================================
 import os
+
 os.environ["TORCH_HOME"] = "./model_weights/torch"
 os.environ["HF_HOME"] = "./model_weights/huggingface"
 os.environ["PYANNOTE_CACHE"] = "./model_weights/torch/pyannote"
@@ -7,20 +8,23 @@ os.environ["PYANNOTE_CACHE"] = "./model_weights/torch/pyannote"
 
 import base64
 import warnings
+
 import gradio as gr
 import pandas as pd
+from loguru import logger
 
 from src.video_processing import process_all_videos_from_path, process_video
 
 warnings.filterwarnings("ignore")
 
+
 def process_multiple_videos(
     folder_path=None,
     video_files=None,
-    perform_diarization=True,
+    perform_ner=True,
     perform_sentiment=True,
     perform_tone=True,
-):  # Added checkboxes
+):  # Updated: NER replaces diarization
     """
     Processes videos from a specified folder path or from uploaded files.
     Returns a status message, a pandas DataFrame, and the path to the
@@ -30,11 +34,11 @@ def process_multiple_videos(
     os.makedirs(output_dir, exist_ok=True)
     processed_csvs = []
 
-    print(
-        f"DEBUG: Initializing process_multiple_videos. Folder Path: '{folder_path}', Video Files: {video_files}"
+    logger.debug(
+        f"Initializing process_multiple_videos. Folder Path: '{folder_path}', Video Files: {video_files}"
     )
-    print(
-        f"DEBUG: Options - Diarization: {perform_diarization}, Sentiment: {perform_sentiment}, Tone: {perform_tone}"
+    logger.debug(
+        f"Options - NER: {perform_ner}, Sentiment: {perform_sentiment}, Tone: {perform_tone}"
     )
 
     # Clear any existing CSV files in the output directory
@@ -42,17 +46,17 @@ def process_multiple_videos(
         if f.endswith(".csv"):
             try:
                 os.remove(os.path.join(output_dir, f))
-                print(f"DEBUG: Removed old CSV: {f}")
+                logger.debug(f"Removed old CSV: {f}")
             except OSError as e:
-                print(f"ERROR: Error removing old CSV file {f}: {e}")
+                logger.error(f"Error removing old CSV file {f}: {e}")
 
     if folder_path and os.path.isdir(folder_path):
-        print(f"DEBUG: Processing videos from folder: {folder_path}")
+        logger.info(f"Processing videos from folder: {folder_path}")
         # Pass checkbox states to process_all_videos_from_path
         process_all_videos_from_path(
             folder_path,
             output_dir,
-            perform_diarization,
+            perform_ner,
             perform_sentiment,
             perform_tone,
         )
@@ -61,15 +65,15 @@ def process_multiple_videos(
             for f in os.listdir(output_dir)
             if f.endswith(".csv")
         ]
-        print(
-            f"DEBUG: Finished processing videos from folder. Found {len(processed_csvs)} CSVs."
+        logger.info(
+            f"Finished processing videos from folder. Found {len(processed_csvs)} CSVs."
         )
 
     elif video_files:
-        print(f"DEBUG: Processing uploaded video files: {video_files}")
+        logger.info(f"Processing uploaded video files: {video_files}")
         for idx, video_path in enumerate(video_files):
-            print(
-                f"DEBUG: Checking uploaded video_path[{idx}]: '{video_path}' (Exists: {os.path.exists(video_path)})"
+            logger.debug(
+                f"Checking uploaded video_path[{idx}]: '{video_path}' (Exists: {os.path.exists(video_path)})"
             )
 
             if not os.path.exists(video_path):
@@ -84,8 +88,8 @@ def process_multiple_videos(
             output_csv_filename = os.path.splitext(original_filename)[0] + ".csv"
             output_csv_path = os.path.join(output_dir, output_csv_filename)
 
-            print(
-                f"DEBUG: Processing uploaded video: {original_filename} to {output_csv_path}"
+            logger.info(
+                f"Processing uploaded video: {original_filename} to {output_csv_path}"
             )
 
             try:
@@ -94,33 +98,32 @@ def process_multiple_videos(
                 process_video(
                     video_path,
                     output_csv_path,
-                    perform_diarization,
+                    perform_ner,
                     perform_sentiment,
                     perform_tone,
                 )
                 processed_csvs.append(output_csv_path)
-                print(
-                    f"DEBUG: Successfully processed uploaded video: {original_filename}"
+                logger.success(
+                    f"Successfully processed uploaded video: {original_filename}"
                 )
             except Exception as e:
-                # Log the full traceback for better debugging
                 import traceback
 
-                print(
-                    f"ERROR: Exception while processing {original_filename}: {str(e)}"
+                logger.error(
+                    f"Exception while processing {original_filename}: {str(e)}"
                 )
-                print(traceback.format_exc())
+                logger.error(traceback.format_exc())
                 return (
                     f"Error processing {original_filename}: {str(e)}. Check console for details.",
                     gr.update(visible=False, value=None),
                     gr.update(visible=False, value=None),
                 )
-        print(
-            f"DEBUG: Finished processing uploaded videos. Found {len(processed_csvs)} CSVs."
+        logger.info(
+            f"Finished processing uploaded videos. Found {len(processed_csvs)} CSVs."
         )
 
     else:
-        print("DEBUG: No folder path or video files provided.")
+        logger.warning("No folder path or video files provided.")
         return (
             "Please provide a folder path or upload video files to begin.",
             gr.update(visible=False, value=None),
@@ -131,7 +134,7 @@ def process_multiple_videos(
         try:
             # Display the first processed CSV in the DataFrame
             df = pd.read_csv(processed_csvs[0])
-            print(f"DEBUG: Displaying data from: {os.path.basename(processed_csvs[0])}")
+            logger.info(f"Displaying data from: {os.path.basename(processed_csvs[0])}")
             return (
                 f"Successfully processed {len(processed_csvs)} video(s). Displaying data from {os.path.basename(processed_csvs[0])}.",
                 gr.update(visible=True, value=df),
@@ -141,17 +144,17 @@ def process_multiple_videos(
         except Exception as e:
             import traceback
 
-            print(
-                f"ERROR: Error reading processed CSV {os.path.basename(processed_csvs[0])}: {str(e)}"
+            logger.error(
+                f"Error reading processed CSV {os.path.basename(processed_csvs[0])}: {str(e)}"
             )
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             return (
                 f"Error reading processed CSV {os.path.basename(processed_csvs[0])}: {str(e)}. Check console for details.",
                 gr.update(visible=False, value=None),
                 gr.update(visible=False, value=None),
             )
 
-    print("DEBUG: No videos were processed or no CSV outputs were generated.")
+    logger.warning("No videos were processed or no CSV outputs were generated.")
     return (
         "No videos were processed or no CSV outputs were generated. Please check inputs and console logs.",
         gr.update(visible=False, value=None),
@@ -226,8 +229,8 @@ def create_interface():
 
                 with gr.Group():
                     with gr.Row():  # Make checkboxes inline
-                        checkbox_diarization = gr.Checkbox(
-                            label="Speaker Diarization",
+                        checkbox_ner = gr.Checkbox(
+                            label="NER (Named Entity Recognition)",
                             value=True,
                             elem_classes=["red-checkbox"],
                         )
@@ -268,7 +271,7 @@ def create_interface():
             inputs=[
                 folder_path,
                 video_files,
-                checkbox_diarization,
+                checkbox_ner,
                 checkbox_sentiment,
                 checkbox_tone,
             ],  # Added checkboxes to inputs

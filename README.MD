@@ -6,7 +6,7 @@ This tool is a web application for TRIP-LAB that analyzes communication data in 
 ## Overview
 
 The project consists of two main components:
-1. A video processing pipeline that extracts audio, performs transcription, and analyzes sentiment
+1. A video processing pipeline that extracts audio,  performs speaker identification and  transcription, and analyzes sentiment
 2. A visualization interface built with Gradio that displays analysis results through interactive plots
 
 ## Features
@@ -22,14 +22,18 @@ The project consists of two main components:
 
 
 ## Installation
-
-1. Clone the repository
-2. Create a Virtual Environment and then  Install  the  required packages:
+1. Clone the repository.
+2. Create a virtual environment (recommended) to isolate dependencies:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   ```
+3. Install the required packages:
    ```bash
    pip install -r requirements.txt
    ```
 
-Since we are using a local model for our transcription (speech-to-text) , it requires the command-line tool ffmpeg to be installed on your system, which is available from most package managers:
+Since we are using a local model for our transcription (speech-to-text), it requires the command-line tool ffmpeg to be installed on your system, which is available from most package managers:
 
 ```
 # on Ubuntu or Debian
@@ -47,6 +51,9 @@ choco install ffmpeg
 # on Windows using Scoop (https://scoop.sh/)
 scoop install ffmpeg
 ```
+
+> ffmpeg is actually platform dependent , so the command above are ways to install it based on your operating system
+
 
 ## Usage
 
@@ -97,6 +104,6 @@ The system has been tested with:
 
 ## Notes
 
-- Sentiment analysis uses a local pre-trained model, not external APIs
+- All tasks  uses a local pre-trained model, zero external APIs or internet connection.
 - Processing time varies based on video length and system capabilities
 - CSV outputs are saved with unique names based on input video filenames
