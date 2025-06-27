@@ -5,9 +5,10 @@ os.environ["HF_HOME"] = "./model_weights/huggingface"
 os.environ["PYANNOTE_CACHE"] = "./model_weights/torch/pyannote"
 # ====================================================================================================
 from transformers import pipeline
+import torch
 import warnings
 warnings.filterwarnings("ignore")
-
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def analyze_sentiment(text):
     """Perform sentiment analysis and return a composite score from -1 to +1."""
@@ -17,6 +18,8 @@ def analyze_sentiment(text):
         tokenizer="cardiffnlp/twitter-roberta-base-sentiment",
         return_all_scores=True,
     )
+    sentiment_pipeline.to(device)
+    
     result = sentiment_pipeline(text)[0]
     scores = {item["label"]: item["score"] for item in result}
     negative = scores.get("LABEL_0", 0)
