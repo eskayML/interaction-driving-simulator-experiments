@@ -1,5 +1,0 @@
-speaker_id,start_time,end_time,transcribed_content,named_entities
-SPEAKER_00,0.0s,3.5s," back for targets that are in the environment, so the car cap will account should pay attention.",[]
-SPEAKER_00,3.6s,5.0s, that screen to save them.,[]
-SPEAKER_00,5.4s,6.4s, immediate Mental health,"[{'entity': 'NORP', 'text': 'Mental'}]"
-SPEAKER_00,7.1s,10.0s, to tap the targets on that ODS as well as completing the,"[{'entity': 'ORG', 'text': 'ODS'}]"

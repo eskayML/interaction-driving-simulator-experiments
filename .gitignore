@@ -1,5 +1,5 @@
 __pycache__
 videos/*
-.wav
+*.wav
 speaker_segments
 debug_app.py

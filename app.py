@@ -14,7 +14,7 @@ import gradio as gr
 import pandas as pd
 from loguru import logger
 
-from src.plotting import plot_word_count_per_speaker
+from src.plotting import plot_speaker_timeline, plot_word_count_per_speaker
 from src.video_processing import process_all_videos_from_path, process_video
 
 warnings.filterwarnings("ignore")
@@ -150,15 +150,18 @@ def process_multiple_videos(
             # Display the first processed CSV in the DataFrame
             df = pd.read_csv(processed_csvs[0])
             logger.info(f"Displaying data from: {os.path.basename(processed_csvs[0])}")
-            # Generate plot and convert to base64 HTML
+            # Generate plots and convert to base64 HTML
             plot_img = plot_word_count_per_speaker(df)
             plot_html = pil_image_to_base64_html(plot_img)
+            timeline_img = plot_speaker_timeline(df)
+            timeline_html = pil_image_to_base64_html(timeline_img)
             return (
                 f"Successfully processed {len(processed_csvs)} video(s). Displaying data from {os.path.basename(processed_csvs[0])}.",
                 gr.update(visible=True, value=df),
                 # Ensure the download_csv component gets the correct path to the first CSV
                 gr.update(visible=True, value=processed_csvs[0]),
                 plot_html,
+                timeline_html,
             )
         except Exception as e:
             import traceback
@@ -172,6 +175,7 @@ def process_multiple_videos(
                 gr.update(visible=False, value=None),
                 gr.update(visible=False, value=None),
                 "",
+                "",
             )
 
     logger.warning("No videos were processed or no CSV outputs were generated.")
@@ -179,6 +183,7 @@ def process_multiple_videos(
         "No videos were processed or no CSV outputs were generated. Please check inputs and console logs.",
         gr.update(visible=False, value=None),
         gr.update(visible=False, value=None),
+        "",
         "",
     )
 
@@ -284,6 +289,10 @@ def create_interface():
                     label="Word Count Plot",
                     value="",
                 )
+                timeline_html = gr.HTML(
+                    label="Speaker Timeline Plot",
+                    value="",
+                )
 
         submit_btn.click(
             fn=process_multiple_videos,
@@ -294,7 +303,7 @@ def create_interface():
                 checkbox_sentiment,
                 checkbox_tone,
             ],
-            outputs=[status, output_table, download_csv, plot_html],
+            outputs=[status, output_table, download_csv, plot_html, timeline_html],
         )
 
     return demo
