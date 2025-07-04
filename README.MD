@@ -52,7 +52,8 @@ choco install ffmpeg
 scoop install ffmpeg
 ```
 
-> ffmpeg is actually platform dependent , so the command above are ways to install it based on your operating system
+> [!TIP]
+   > ffmpeg is actually platform dependent , so the commands above show the different ways to install it based on your operating system
 
 
 ## Usage
@@ -64,7 +65,7 @@ python app.py
 ```
 
 Then:
-1. Access the web interface
+1. Access the web interface on `http://localhost:7860`
 2. Either:
    - Enter a folder path containing .mp4 files, or
    - Upload video files directly through the interface

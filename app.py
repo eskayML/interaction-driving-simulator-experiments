@@ -7,15 +7,30 @@ os.environ["PYANNOTE_CACHE"] = "./model_weights/torch/pyannote"
 # ====================================================================================================
 
 import base64
+import io
 import warnings
 
 import gradio as gr
 import pandas as pd
 from loguru import logger
 
+from src.plotting import plot_word_count_per_speaker
 from src.video_processing import process_all_videos_from_path, process_video
 
 warnings.filterwarnings("ignore")
+
+
+def get_image_base64(path):
+    with open(path, "rb") as image_file:
+        encoded = base64.b64encode(image_file.read()).decode("utf-8")
+    return f'<img src="data:image/png;base64,{encoded}" width="300" style="display: block; margin: 0 auto;"/>'
+
+
+def pil_image_to_base64_html(img):
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    base64_str = base64.b64encode(buf.getvalue()).decode("utf-8")
+    return f'<img src="data:image/png;base64,{base64_str}" width="500" style="display: block; margin: 0 auto;"/>'
 
 
 def process_multiple_videos(
@@ -24,7 +39,7 @@ def process_multiple_videos(
     perform_ner=True,
     perform_sentiment=True,
     perform_tone=True,
-):  # Updated: NER replaces diarization
+):
     """
     Processes videos from a specified folder path or from uploaded files.
     Returns a status message, a pandas DataFrame, and the path to the
@@ -135,11 +150,15 @@ def process_multiple_videos(
             # Display the first processed CSV in the DataFrame
             df = pd.read_csv(processed_csvs[0])
             logger.info(f"Displaying data from: {os.path.basename(processed_csvs[0])}")
+            # Generate plot and convert to base64 HTML
+            plot_img = plot_word_count_per_speaker(df)
+            plot_html = pil_image_to_base64_html(plot_img)
             return (
                 f"Successfully processed {len(processed_csvs)} video(s). Displaying data from {os.path.basename(processed_csvs[0])}.",
                 gr.update(visible=True, value=df),
                 # Ensure the download_csv component gets the correct path to the first CSV
                 gr.update(visible=True, value=processed_csvs[0]),
+                plot_html,
             )
         except Exception as e:
             import traceback
@@ -152,6 +171,7 @@ def process_multiple_videos(
                 f"Error reading processed CSV {os.path.basename(processed_csvs[0])}: {str(e)}. Check console for details.",
                 gr.update(visible=False, value=None),
                 gr.update(visible=False, value=None),
+                "",
             )
 
     logger.warning("No videos were processed or no CSV outputs were generated.")
@@ -159,13 +179,8 @@ def process_multiple_videos(
         "No videos were processed or no CSV outputs were generated. Please check inputs and console logs.",
         gr.update(visible=False, value=None),
         gr.update(visible=False, value=None),
+        "",
     )
-
-
-def get_image_base64(path):
-    with open(path, "rb") as image_file:
-        encoded = base64.b64encode(image_file.read()).decode("utf-8")
-    return f'<img src="data:image/png;base64,{encoded}" width="300" style="display: block; margin: 0 auto;"/>'
 
 
 def create_interface():
@@ -265,6 +280,10 @@ def create_interface():
                     type="filepath",  # This is for download, not upload
                     file_count="single",
                 )
+                plot_html = gr.HTML(
+                    label="Word Count Plot",
+                    value="",
+                )
 
         submit_btn.click(
             fn=process_multiple_videos,
@@ -274,8 +293,8 @@ def create_interface():
                 checkbox_ner,
                 checkbox_sentiment,
                 checkbox_tone,
-            ],  # Added checkboxes to inputs
-            outputs=[status, output_table, download_csv],
+            ],
+            outputs=[status, output_table, download_csv, plot_html],
         )
 
     return demo
