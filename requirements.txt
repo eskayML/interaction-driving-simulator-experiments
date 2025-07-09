@@ -10,3 +10,4 @@ openai-whisper==20240930
 gradio==5.23.1
 pyannote.audio==3.3.2
 loguru==0.7.3
+vaderSentiment==3.3.2
