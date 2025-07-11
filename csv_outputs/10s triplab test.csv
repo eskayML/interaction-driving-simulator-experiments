@@ -1,5 +1,0 @@
-speaker_id,start_time,end_time,transcribed_content,named_entities,sentiment_score
-SPEAKER_00,0.0s,3.5s," back for targets that are in the environment, so the car cap will account should pay attention.",[],-0.1027
-SPEAKER_00,3.6s,5.0s, that screen to save them.,[],0.4939
-SPEAKER_00,5.4s,6.4s, He has run zone 21 out to turn the mission. . .,"[{'entity': 'CARDINAL', 'text': '21'}]",0.0
-SPEAKER_00,7.1s,10.0s, to tap the targets on that ODS as well as completing the,"[{'entity': 'ORG', 'text': 'ODS'}]",0.2732
