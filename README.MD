@@ -90,8 +90,14 @@ Then:
    - Segments audio into 5-second chunks
 
 4. **Sentiment Analysis (`sentiment_analysis.py`)**
-   - Uses CardiffNLP's RoBERTa model
+   - Uses CardiffNLP's RoBERTa model (recently optimized by switching to VADER)
    - Provides sentiment scores (-1 to +1)
+
+
+>[!NOTE]
+   >- All tasks  uses a local pre-trained model, zero external APIs or internet connection.
+   >- Processing time varies based on video length and system capabilities
+   >- CSV outputs are saved with unique names based on input video filenames
 
 
 ## Testing
@@ -103,8 +109,3 @@ The system has been tested with:
 - Different speech patterns and languages
 
 
-## Notes
-
-- All tasks  uses a local pre-trained model, zero external APIs or internet connection.
-- Processing time varies based on video length and system capabilities
-- CSV outputs are saved with unique names based on input video filenames
