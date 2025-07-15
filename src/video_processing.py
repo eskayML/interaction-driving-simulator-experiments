@@ -27,9 +27,14 @@ pipeline = Pipeline.from_pretrained(
     # use_auth_token="", # we don't need this since we running locally
 )
 
-# Send pipeline to GPU if available
-pipeline.to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-
+# Send pipeline to GPU if available and log device info
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+if torch.cuda.is_available():
+    logger.info("CUDA is available. Using GPU for inference.")
+else:
+    logger.warning("CUDA is not available. Using CPU for inference.")
+    
+pipeline.to(device)
 
 def process_video(
     video_path,
