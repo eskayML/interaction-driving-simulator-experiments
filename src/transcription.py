@@ -19,7 +19,7 @@ def transcribe_audio(audio_path):
     """
     device = "cuda" if torch.cuda.is_available() else "cpu"
     # Use medium.en model with faster-whisper
-    model_size = "base.en"
+    model_size = "medium.en"
     model = WhisperModel(
         model_size,
         device=device,
