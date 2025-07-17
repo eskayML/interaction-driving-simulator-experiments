@@ -77,7 +77,7 @@ Then:
 
 ### Data Processing Pipeline
 
-1. **Video Processing (`video_processing.py`)**
+1. **Video Processing (`pipeline.py`)**
    - Handles video file input
    - Manages the processing pipeline and the diarization
 

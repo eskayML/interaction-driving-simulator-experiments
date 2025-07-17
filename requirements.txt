@@ -11,3 +11,4 @@ gradio==5.23.1
 pyannote.audio==3.3.2
 loguru==0.7.3
 vaderSentiment==3.3.2
+faster-whisper==1.1.1
