@@ -14,8 +14,8 @@ import gradio as gr
 import pandas as pd
 from loguru import logger
 
+from src.pipeline import process_all_videos_from_path, process_video
 from src.plotting import plot_speaker_charts
-from src.video_processing import process_all_videos_from_path, process_video
 
 warnings.filterwarnings("ignore")
 
@@ -108,7 +108,7 @@ def process_multiple_videos(
             )
 
             try:
-                # Call the process_video function from src.video_processing
+                # Call the process_video function from src.pipeline
                 # Pass checkbox states to process_video
                 process_video(
                     video_path,
