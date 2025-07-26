@@ -1,32 +1,36 @@
+
 # Communication Analysis Tool for Human-AI Interaction Driving Simulator Experiments
 
-This tool is a web application for TRIP-LAB that analyzes communication data in group simulation settings by processing video files to understand group dynamics through advanced data analytics and AI modeling.
-
 ![banner](assets/image.png)
+
+This repository contains a web application for TRIP-LAB that analyzes communication data in group simulation settings by processing video files to understand group dynamics through advanced data analytics and AI modeling.
+
 ## Overview
 
 The project consists of two main components:
-1. A video processing pipeline that extracts audio,  performs speaker identification and  transcription, and analyzes sentiment
-2. A visualization interface built with Gradio that displays analysis results through interactive plots
+1. A video/audio processing pipeline that extracts audio, performs speaker segmentation, transcribes speech, and analyzes sentiment and tone.
+2. A Gradio-based visualization interface that displays analysis results through interactive plots and CSV outputs.
 
 ## Features
 
-- Audio extraction from video files
-- Speech-to-text transcription using OpenAI's Whisper model
-- Sentiment analysis using RoBERTa-based model
+- Audio extraction from video files (using ffmpeg)
+- Speech-to-text transcription using Faster Whisper (local, fast Whisper implementation)
+- Speaker diarization using pyannote-audio (for multi-speaker scenarios)
+- Sentiment analysis using VADER or RoBERTa-based models
 - Tone intensity analysis using audio amplitude
-- Interactive visualization of:
-  - Word count distribution
-  - Sentiment trends over time
-  - Tone intensity patterns
-
+- Named Entity Recognition (NER) using spaCy
+- CSV output with per-segment analysis (speaker, time, transcript, entities, sentiment, tone)
+- Interactive visualization interface (Gradio)
 
 ## Installation
+
 1. Clone the repository.
-2. Create a virtual environment (recommended) to isolate dependencies:
+2. Create a virtual environment (recommended):
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   venv\Scripts\activate  # On Windows
+   # or
+   source venv/bin/activate  # On Linux/Mac
    ```
 3. Install the required packages:
    ```bash
