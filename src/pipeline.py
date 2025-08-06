@@ -33,8 +33,9 @@ if torch.cuda.is_available():
     logger.info("CUDA is available. Using GPU for inference.")
 else:
     logger.warning("CUDA is not available. Using CPU for inference.")
-    
+
 pipeline.to(device)
+
 
 def process_video(
     video_path,
@@ -64,7 +65,7 @@ def process_video(
             output_dir, f"{speaker}_{turn.start:.1f}_{turn.end:.1f}.wav"
         )
         sf.write(output_file, segment, sr)
-        transcription = transcribe_audio(output_file)["text"]
+        transcription = transcribe_audio(output_file)
         # Only compute if enabled
         sentiment_score = (
             analyze_sentiment(transcription) if perform_sentiment else None
