@@ -9,6 +9,7 @@ os.environ["PYANNOTE_CACHE"] = "./model_weights/torch/pyannote"
 import warnings
 
 import torch
+from loguru import logger
 from faster_whisper import WhisperModel
 
 
@@ -17,21 +18,27 @@ def transcribe_audio(audio_path):
     Args:
         audio_path (str): Path to the audio file.
     """
+    logger.warning("Starting transcription...")
     device = "cuda" if torch.cuda.is_available() else "cpu"
     # Use medium.en model with faster-whisper
     model_size = "medium.en"
-    model = WhisperModel(
-        model_size,
-        device=device,
-        compute_type="int8",
-        download_root="./model_weights/whisper",
-    )
-    segments, info = model.transcribe(audio_path, word_timestamps=True)
-    # Convert segments generator to list of dicts for compatibility
-    texts = [
-        segment.text
-        for segment in segments
-        if hasattr(segment, "text") and segment.text
-    ]
-    transcription = " ".join(texts)
+    try:
+        model = WhisperModel(
+            model_size,
+            device=device,
+            compute_type="int8",
+            download_root="./model_weights/whisper",
+        )
+        segments, info = model.transcribe(audio_path, word_timestamps=True)
+        logger.warning(f"Segments: {segments}. Info: {info}")
+        # Convert segments generator to list of dicts for compatibility
+        texts = [
+            segment.text
+            for segment in segments
+            if hasattr(segment, "text") and segment.text
+        ]
+        transcription = " ".join(texts)
+    except Exception as e:
+        logger.warning(f"Error during transcription: {e}")
+    logger.warning(f"Transcription completed for {audio_path}")
     return transcription

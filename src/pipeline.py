@@ -54,10 +54,16 @@ def process_video(
     output_dir = "speaker_segments"
     os.makedirs(output_dir, exist_ok=True)
     table_data = []
+    next_spin_report = False
 
     for turn, _, speaker in (
         diarization.itertracks(yield_label=True) if diarization else []
     ):
+        if next_spin_report:
+            logger.info(
+                f"Processing segment: {turn.start:.1f}s to {turn.end:.1f}s for speaker {speaker}"
+            )
+            next_spin_report = False
         start_sample = int(turn.start * sr)
         end_sample = int(turn.end * sr)
         segment = audio[start_sample:end_sample]
@@ -78,6 +84,8 @@ def process_video(
         named_entities = extract_named_entities(transcription) if perform_ner else None
 
         if (turn.end - turn.start) < 0.5:
+            logger.warning(f"Skipping segment shorter than half second: {turn.end} - {turn.start} = {turn.end - turn.start}")
+            next_spin_report = True
             continue
 
         row = {
