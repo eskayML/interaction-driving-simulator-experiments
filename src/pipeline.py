@@ -36,6 +36,20 @@ else:
 
 pipeline.to(device)
 
+params = {
+    "clustering": {
+        "method": "average",          # Agglomerative clustering
+        "min_cluster_size": 14,        # Avoid tiny false clusters
+        "threshold": 0.65,            # Tweak between 0.6-0.7 for ~7 speakers
+    },
+
+    "segmentation": {
+        "min_duration_off": 0.05,      # Min silence to break segments
+    }
+}
+
+pipeline.instantiate(params)
+
 
 def process_video(
     video_path,
@@ -80,10 +94,10 @@ def process_video(
         try:
             transcription = transcribe_audio(output_file)
             if transcription is None or transcription.strip() == "":
-                logger.warning(f"Empty transcription for {output_file}")
+                logger.warning(f"Empty transcription for {output_file} .. skipping")
                 transcription = ""
         except Exception as e:
-            logger.error(f"Transcription failed for {output_file}: {str(e)}")
+            logger.error(f"Transcription failed for {output_file}: {str(e)}.. skipping")
             transcription = ""
 
         # Only compute if enabled

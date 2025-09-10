@@ -11,7 +11,7 @@ import warnings
 import torch
 from faster_whisper import WhisperModel
 from loguru import logger
-import soundfile as sf
+
 
 def transcribe_audio(audio_path):
     """
@@ -24,22 +24,9 @@ def transcribe_audio(audio_path):
     Returns:
         str: Transcribed text or empty string if failed
     """
-    # 1️⃣ FIRST: Check if audio file is valid and has sufficient duration
-    try:
-        # Get audio duration
-        audio_info = sf.info(audio_path)
-        duration = audio_info.duration
-        
-        # Skip if audio is too short (should be caught in pipeline, but double-check here)
-        if duration < 0.5:
-            logger.warning(f"Skipping transcription for {audio_path}: duration {duration:.3f}s < 0.5s")
-            return ""
-    except Exception as e:
-        logger.error(f"Error reading audio file {audio_path}: {str(e)}")
-        return ""
     
-    # 2️⃣ Set up model with proper error handling
-    logger.debug(f"Starting transcription for {audio_path} (duration: {duration:.2f}s)")
+    #  Set up model with proper error handling
+    logger.debug(f"Starting transcription for {audio_path}")
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model_size = "medium.en"
     
