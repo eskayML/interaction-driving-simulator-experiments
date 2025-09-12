@@ -27,8 +27,6 @@ def get_image_base64(path):
 
 
 
-
-
 def process_multiple_videos(
     folder_path=None,
     video_files=None,
@@ -265,7 +263,7 @@ def create_interface():
 
                 submit_btn = gr.Button("Start Processing", variant="primary")
 
-            with gr.Column(scale=2):
+            with gr.Column(scale=3):
                 status = gr.Textbox(
                     label="Status",
                     interactive=False,
@@ -284,8 +282,8 @@ def create_interface():
                     type="filepath",  # This is for download, not upload
                     file_count="single",
                 )
-                with gr.Accordion("Show Plots", open=False) as plot_accordion:
-                    plot_image = gr.Image(label="Speaker Analysis Plots")
+                with gr.Accordion("Show Plots", open=True) as plot_accordion:
+                    plot_image = gr.Image(label="Speaker Analysis Plots", width=1200)
 
         submit_btn.click(
             fn=process_multiple_videos,
