@@ -3,3 +3,4 @@ videos/*
 *.wav
 speaker_segments
 debug_app.py
+test_plotting.py
