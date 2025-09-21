@@ -26,7 +26,7 @@ pipeline = Pipeline.from_pretrained(
     "pyannote/speaker-diarization-3.1",
     # use_auth_token="", # we don't need this since we running locally
 )
-
+    
 # Send pipeline to GPU if available and log device info
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 if torch.cuda.is_available():
@@ -49,7 +49,7 @@ params = {
 }
 
 pipeline.instantiate(params)
-
+logger.info("STARTING DIARIZATION PROCESS.....")
 
 def process_video(
     video_path,
