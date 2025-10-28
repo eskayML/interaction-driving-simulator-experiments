@@ -1,6 +1,8 @@
+--extra-index-url https://download.pytorch.org/whl/cu128
 moviepy==1.0.3
-transformers==4.35.2 
-torchaudio==2.7.1
+transformers==4.35.2
+torch==2.7.1+cu128
+torchaudio==2.7.1+cu128
 librosa==0.10.1 
 spacy==3.8.7
 pandas==2.1.0 
